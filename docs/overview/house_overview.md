@@ -11,8 +11,12 @@
 1. **地基**：房屋的基础结构，使用灰色材质表示混凝土
 2. **墙壁**：房屋的外墙，使用砖红色材质
 3. **屋顶**：房屋的顶部结构，使用棕色材质表示屋顶瓦片
-4. **窗户**：分布在房屋四周的窗户，使用半透明蓝色材质表示玻璃
-5. **门**：房屋的前门，使用棕色材质表示木门
+4. **屋檐**：屋顶边缘的延伸部分，使用与屋顶相同的棕色材质
+5. **排水沟**：安装在屋檐下方的排水系统，使用灰色材质表示金属材质
+6. **排水管**：连接排水沟和地面的垂直管道，使用深灰色材质
+7. **烟囱**：位于屋顶的烟囱，包括砖红色的底座和深灰色的顶部
+8. **窗户**：分布在房屋四周的窗户，使用半透明蓝色材质表示玻璃
+9. **门**：房屋的前门，使用棕色材质表示木门
 
 ## 交互功能
 
@@ -38,7 +42,24 @@ House (Group)
 ├── Walls (Group)
 │   └── MainWalls (Mesh)
 ├── Roof (Group)
-│   └── MainRoof (Mesh)
+│   ├── MainRoof (Mesh)
+│   ├── Eaves (Group)
+│   │   ├── FrontEaves (Mesh)
+│   │   ├── BackEaves (Mesh)
+│   │   ├── LeftEaves (Mesh)
+│   │   └── RightEaves (Mesh)
+│   ├── Gutters (Group)
+│   │   ├── FrontGutter (Mesh)
+│   │   ├── BackGutter (Mesh)
+│   │   ├── LeftGutter (Mesh)
+│   │   ├── RightGutter (Mesh)
+│   │   ├── FrontLeftPipe (Mesh)
+│   │   ├── FrontRightPipe (Mesh)
+│   │   ├── BackLeftPipe (Mesh)
+│   │   └── BackRightPipe (Mesh)
+│   └── Chimney (Group)
+│       ├── ChimneyBase (Mesh)
+│       └── ChimneyTop (Mesh)
 ├── Windows (Group)
 │   └── Multiple Window Groups
 └── Doors (Group)
@@ -53,10 +74,11 @@ House (Group)
 
 房屋模型计划在以下方面进行扩展：
 
-1. **模型细节增强**：添加更多细节，如屋檐、排水沟、烟囱等
-2. **材质定制**：允许用户选择不同的墙壁、屋顶材质
-3. **尺寸调整**：允许用户调整房屋的大小和比例
-4. **内部结构**：添加房屋的内部结构，如房间、楼梯等
+1. **材质定制**：允许用户选择不同的墙壁、屋顶材质
+2. **尺寸调整**：允许用户调整房屋的大小和比例
+3. **内部结构**：添加房屋的内部结构，如房间、楼梯等
+4. **环境元素**：添加院子、围栏、车道等环境元素
+5. **季节变化**：添加不同季节的效果，如雨天、雪天等
 
 ## 与其他模型的关系
 
