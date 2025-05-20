@@ -663,6 +663,110 @@
         roof.rotation.y = Math.PI / 4;
         group.add(roof);
 
+        // 添加屋檐
+        const eavesMaterial = new THREE.MeshPhongMaterial({ color: 0x8b4513 });
+
+        // 前屋檐
+        const frontEaves = new THREE.Mesh(
+          new THREE.BoxGeometry(2.2, 0.05, 0.3),
+          eavesMaterial
+        );
+        frontEaves.position.set(0, 1.05, 0.9);
+        group.add(frontEaves);
+
+        // 后屋檐
+        const backEaves = new THREE.Mesh(
+          new THREE.BoxGeometry(2.2, 0.05, 0.3),
+          eavesMaterial
+        );
+        backEaves.position.set(0, 1.05, -0.9);
+        group.add(backEaves);
+
+        // 左屋檐
+        const leftEaves = new THREE.Mesh(
+          new THREE.BoxGeometry(0.3, 0.05, 1.8),
+          eavesMaterial
+        );
+        leftEaves.position.set(-1.15, 1.05, 0);
+        group.add(leftEaves);
+
+        // 右屋檐
+        const rightEaves = new THREE.Mesh(
+          new THREE.BoxGeometry(0.3, 0.05, 1.8),
+          eavesMaterial
+        );
+        rightEaves.position.set(1.15, 1.05, 0);
+        group.add(rightEaves);
+
+        // 添加排水沟
+        const gutterMaterial = new THREE.MeshPhongMaterial({ color: 0x777777 });
+
+        // 前排水沟
+        const frontGutter = new THREE.Mesh(
+          new THREE.BoxGeometry(2.2, 0.08, 0.08),
+          gutterMaterial
+        );
+        frontGutter.position.set(0, 1.0, 0.9);
+        group.add(frontGutter);
+
+        // 后排水沟
+        const backGutter = new THREE.Mesh(
+          new THREE.BoxGeometry(2.2, 0.08, 0.08),
+          gutterMaterial
+        );
+        backGutter.position.set(0, 1.0, -0.9);
+        group.add(backGutter);
+
+        // 左排水沟
+        const leftGutter = new THREE.Mesh(
+          new THREE.BoxGeometry(0.08, 0.08, 1.8),
+          gutterMaterial
+        );
+        leftGutter.position.set(-1.15, 1.0, 0);
+        group.add(leftGutter);
+
+        // 右排水沟
+        const rightGutter = new THREE.Mesh(
+          new THREE.BoxGeometry(0.08, 0.08, 1.8),
+          gutterMaterial
+        );
+        rightGutter.position.set(1.15, 1.0, 0);
+        group.add(rightGutter);
+
+        // 添加排水管
+        const drainpipeMaterial = new THREE.MeshPhongMaterial({ color: 0x666666 });
+
+        // 前左排水管
+        const frontLeftPipe = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.04, 0.04, 1.1, 8),
+          drainpipeMaterial
+        );
+        frontLeftPipe.position.set(-1.1, 0.45, 0.9);
+        group.add(frontLeftPipe);
+
+        // 前右排水管
+        const frontRightPipe = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.04, 0.04, 1.1, 8),
+          drainpipeMaterial
+        );
+        frontRightPipe.position.set(1.1, 0.45, 0.9);
+        group.add(frontRightPipe);
+
+        // 添加烟囱
+        const chimneyBase = new THREE.Mesh(
+          new THREE.BoxGeometry(0.3, 0.5, 0.3),
+          new THREE.MeshPhongMaterial({ color: 0x8b4513 })
+        );
+        chimneyBase.position.set(0.5, 1.75, 0);
+        group.add(chimneyBase);
+
+        const chimneyTop = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.15, 0.15, 0.1, 16),
+          new THREE.MeshPhongMaterial({ color: 0x555555 })
+        );
+        chimneyTop.position.set(0.5, 2.05, 0);
+        group.add(chimneyTop);
+
         // 窗户
         const window1 = new THREE.Mesh(
           new THREE.PlaneGeometry(0.3, 0.3),
