@@ -20,7 +20,7 @@
     #status {
       position: absolute;
       bottom: 20px;
-      left: 20px; /* 修改为居左 */
+      left: 20px;
       background: rgba(255,255,255,0.9);
       padding: 8px 16px;
       font-size: 16px;
@@ -200,7 +200,7 @@
     // 状态更新
     const status = document.getElementById('status');
     function updateStatus(text) {
-      status.innerText = `📌 当前状态：${text}`;
+      status.innerText = text; // 直接显示文本，移除"当前状态："前缀
       
       // 添加状态变化动画
       status.style.opacity = '0';
