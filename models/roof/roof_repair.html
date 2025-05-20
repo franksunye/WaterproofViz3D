@@ -19,13 +19,34 @@
     }
     #status {
       position: absolute;
-      top: 160px;
-      left: 10px;
+      bottom: 20px;
+      left: 20px; /* 修改为居左 */
       background: rgba(255,255,255,0.9);
-      padding: 8px;
+      padding: 8px 16px;
+      font-size: 16px;
+      max-width: 80%;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      z-index: 20;
+    }
+    #resetView {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      z-index: 20;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
       font-size: 14px;
-      max-width: 240px;
-      border: 1px solid #ccc;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      transition: background-color 0.3s;
+    }
+    #resetView:hover {
+      background-color: #45a049;
     }
   </style>
 </head>
@@ -35,9 +56,8 @@
     <button id="removeInsulation">2. 拆除保温层</button>
     <button id="addNewWaterproof">3. 铺设新防水</button>
     <button id="demoProcess">▶️ 演示维修流程</button>
-    <button id="resetView">🔄 重置视图</button>
-
   </div>
+  <button id="resetView">🔄 重置视图</button>
   <div id="status">状态提示将在这里显示</div>
 
   <script type="module">
@@ -63,58 +83,156 @@
     light.position.set(10, 10, 10);
     scene.add(light);
 
-    // 材料
+    // 材料 - 提前定义所有材质
     const matBase = new THREE.MeshStandardMaterial({ color: 0x666666 });
     const matInsulation = new THREE.MeshStandardMaterial({ color: 0xffcc00, transparent: true, opacity: 0.8 });
     const matWaterproof = new THREE.MeshStandardMaterial({ color: 0x0066ff, transparent: true, opacity: 0.6 });
     const matNewWaterproof = new THREE.MeshStandardMaterial({ color: 0x00cc99, transparent: true, opacity: 0.8 });
     const matParapet = new THREE.MeshStandardMaterial({ color: 0x888888 });
 
-    // 层结构
+    // 创建高质量Sprite文字标注
+    function createLabel(text, size = 1.0, backgroundColor = 'rgba(255, 255, 255, 0.9)') {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      
+      // 根据文本长度动态调整字体大小
+      let fontSize = 48;
+      if (text.length > 3) fontSize = 36; // 长文本使用较小字体
+      if (text.length > 5) fontSize = 30; // 更长文本进一步减小
+      
+      // 设置字体并测量文本宽度
+      context.font = `bold ${fontSize}px Arial, sans-serif`;
+      const textWidth = context.measureText(text).width;
+      
+      // 设置canvas尺寸，增加安全边距
+      canvas.width = textWidth * 1.2;
+      canvas.height = fontSize * 1.8;
+      
+      // 重新设置字体，因为canvas尺寸已调整
+      context.font = `bold ${fontSize}px Arial, sans-serif`;
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+      
+      // 绘制背景
+      context.fillStyle = backgroundColor;
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // 添加边框
+      context.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+      context.lineWidth = 2;
+      context.strokeRect(0, 0, canvas.width, canvas.height);
+      
+      // 绘制文字
+      context.fillStyle = 'rgba(0, 0, 0, 0.9)';
+      context.fillText(text, canvas.width / 2, canvas.height / 2);
+      
+      // 创建纹理
+      const texture = new THREE.CanvasTexture(canvas);
+      
+      // 创建Sprite材质
+      const spriteMaterial = new THREE.SpriteMaterial({ 
+        map: texture,
+        transparent: true
+      });
+      
+      // 创建Sprite
+      const sprite = new THREE.Sprite(spriteMaterial);
+      sprite.scale.set(size, size * canvas.height / canvas.width, 1);
+      sprite.userData = { originalSize: size }; // 保存原始大小用于缩放动画
+      
+      return sprite;
+    }
+
+    // 层结构 - 确保在使用材质前已经定义
     const base = new THREE.Mesh(new THREE.BoxGeometry(6, 0.5, 6), matBase);
     base.position.y = 0;
     base.name = "结构层";
     scene.add(base);
+    
+    // 添加结构层标注（最大，位置最左）
+    const baseLabel = createLabel("结构层", 1.0);
+    baseLabel.position.set(-2.5, 0.25, 3.5);
+    scene.add(baseLabel);
 
     const insulation = new THREE.Mesh(new THREE.BoxGeometry(6, 0.3, 6), matInsulation);
     insulation.position.y = 0.5;
     insulation.name = "保温层";
     scene.add(insulation);
+    
+    // 添加保温层标注（适中，位置居中）
+    const insulationLabel = createLabel("保温层", 0.9);
+    insulationLabel.position.set(0, 0.8, 3.5);
+    scene.add(insulationLabel);
 
     const waterproof = new THREE.Mesh(new THREE.BoxGeometry(6, 0.1, 6), matWaterproof);
     waterproof.position.y = 0.8;
     waterproof.name = "旧防水层";
     scene.add(waterproof);
+    
+    // 添加旧防水层标注（较小，位置偏右）
+    const waterproofLabel = createLabel("旧防水层", 0.8);
+    waterproofLabel.position.set(2.5, 0.95, 3.5);
+    scene.add(waterproofLabel);
 
     const newWaterproof = new THREE.Mesh(new THREE.BoxGeometry(6, 0.1, 6), matNewWaterproof);
     newWaterproof.position.y = 0.8;
     newWaterproof.visible = false;
     newWaterproof.name = "新防水层";
     scene.add(newWaterproof);
+    
+    // 添加新防水层标注（与旧防水层对齐）
+    const newWaterproofLabel = createLabel("新防水层", 0.8);
+    newWaterproofLabel.position.set(2.5, 0.95, 3.5);
+    newWaterproofLabel.visible = false;
+    scene.add(newWaterproofLabel);
 
     // 添加女儿墙结构（边缘的灰色竖墙）
     const parapet = new THREE.Mesh(new THREE.BoxGeometry(6, 1, 0.2), matParapet);
-    parapet.position.set(0, 1.3, -3.1); // 屋顶边缘
+    parapet.position.set(0, 1.3, -3.1);
     parapet.name = "女儿墙";
     scene.add(parapet);
+    
+    // 添加女儿墙标注（位置独立）
+    const parapetLabel = createLabel("女儿墙", 0.8, 'rgba(240, 240, 240, 0.9)');
+    parapetLabel.position.set(0, 2.0, -3.1); // 确保标注在女儿墙上方
+    scene.add(parapetLabel);
 
     // 状态更新
     const status = document.getElementById('status');
     function updateStatus(text) {
       status.innerText = `📌 当前状态：${text}`;
+      
+      // 添加状态变化动画
+      status.style.opacity = '0';
+      setTimeout(() => {
+        status.style.opacity = '1';
+      }, 50);
+    }
+
+    // 高亮标注牌
+    function highlightLabel(label, isHighlight = true) {
+      const factor = isHighlight ? 1.2 : 1.0;
+      label.scale.set(
+        label.userData.originalSize * factor, 
+        label.userData.originalSize * factor * label.material.map.image.height / label.material.map.image.width, 
+        1
+      );
     }
 
     // 按钮交互
     document.getElementById('removeWaterproof').onclick = () => {
       waterproof.visible = false;
+      waterproofLabel.visible = false;
       updateStatus("已移除旧防水层");
     };
     document.getElementById('removeInsulation').onclick = () => {
       insulation.visible = false;
+      insulationLabel.visible = false;
       updateStatus("已拆除保温层");
     };
     document.getElementById('addNewWaterproof').onclick = () => {
       newWaterproof.visible = true;
+      newWaterproofLabel.visible = true;
       updateStatus("已铺设新防水层");
     };
     document.getElementById('resetView').onclick = () => {
@@ -122,42 +240,79 @@
         insulation.visible = true;
         waterproof.visible = true;
         newWaterproof.visible = false;
+        baseLabel.visible = true;
+        insulationLabel.visible = true;
+        waterproofLabel.visible = true;
+        newWaterproofLabel.visible = false;
         updateStatus("已重置视图");
     };
+
+    // 演示维修流程
     document.getElementById('demoProcess').onclick = () => {
-    // 重置状态
-    base.visible = true;
-    insulation.visible = true;
-    waterproof.visible = true;
-    newWaterproof.visible = false;
-    updateStatus("开始演示维修流程...");
+      // 重置状态
+      base.visible = true;
+      insulation.visible = true;
+      waterproof.visible = true;
+      newWaterproof.visible = false;
+      baseLabel.visible = true;
+      insulationLabel.visible = true;
+      waterproofLabel.visible = true;
+      newWaterproofLabel.visible = false;
+      updateStatus("开始演示维修流程...");
 
-    // 依次执行步骤
-    setTimeout(() => {
+      // 依次执行步骤
+      setTimeout(() => {
         waterproof.visible = false;
+        waterproofLabel.visible = false;
         updateStatus("已移除旧防水层");
-    }, 1500);
+      }, 1500);
 
-    setTimeout(() => {
+      setTimeout(() => {
         insulation.visible = false;
+        insulationLabel.visible = false;
         updateStatus("已拆除保温层");
-    }, 3000);
+      }, 3000);
 
-    setTimeout(() => {
+      setTimeout(() => {
         newWaterproof.visible = true;
+        newWaterproofLabel.visible = true;
         updateStatus("已铺设新防水层");
-    }, 4500);
+      }, 4500);
     };
 
-
-    // 点击结构层显示说明
+    // 标注交互
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
+    let currentHighlighted = null;
+    
+    window.addEventListener('mousemove', (event) => {
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects([baseLabel, insulationLabel, waterproofLabel, newWaterproofLabel, parapetLabel]);
+      
+      // 取消之前的高亮
+      if (currentHighlighted) {
+        highlightLabel(currentHighlighted, false);
+        currentHighlighted = null;
+      }
+      
+      // 高亮当前选中的标注
+      if (intersects.length > 0) {
+        currentHighlighted = intersects[0].object;
+        highlightLabel(currentHighlighted, true);
+      }
+    });
+
+    // 点击结构层显示说明
     window.addEventListener('click', (event) => {
       mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      
       raycaster.setFromCamera(mouse, camera);
       const intersects = raycaster.intersectObjects([base, insulation, waterproof, newWaterproof, parapet]);
+      
       if (intersects.length > 0) {
         updateStatus(`点击了：${intersects[0].object.name}`);
       }
@@ -167,6 +322,14 @@
     function animate() {
       requestAnimationFrame(animate);
       controls.update();
+      
+      // 确保标注始终面向相机
+      baseLabel.lookAt(camera.position);
+      insulationLabel.lookAt(camera.position);
+      waterproofLabel.lookAt(camera.position);
+      newWaterproofLabel.lookAt(camera.position);
+      parapetLabel.lookAt(camera.position);
+      
       renderer.render(scene, camera);
     }
     animate();
@@ -178,4 +341,4 @@
     });
   </script>
 </body>
-</html>
+</html>    
