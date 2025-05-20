@@ -1,6 +1,10 @@
-# 3D防水维修可视化项目
+# WaterproofViz3D
 
-一个综合性的3D可视化项目，旨在展示房屋不同部位的防水问题和维修过程。该项目包含多个模型，包括房屋外观模型、屋顶维修模型和卫生间漏水维修模型，为用户提供直观的防水维修可视化体验。
+一个综合性的3D可视化项目，旨在展示房屋不同部位的防水问题和维修过程。该项目包含多个交互式3D模型，包括房屋外观模型、屋顶维修模型和卫生间漏水维修模型，为用户提供直观的防水维修可视化体验。
+
+## 在线演示
+
+访问 [GitHub Pages 演示](https://franksunye.github.io/WaterproofViz3D/) 查看在线演示。
 
 ## 功能特点
 
@@ -30,18 +34,17 @@
 
 1. 克隆仓库：
    ```
-   git clone [仓库URL]
+   git clone https://github.com/franksunye/WaterproofViz3D.git
    ```
 
-2. 打开模型文件：
-   - 房屋模型：`models/house/house_basic.html`
-   - 屋顶维修模型：`models/roof/roof_repair.html`
-   - 卫生间漏水模型：`models/bathroom/bathroom_leakage_livingroom.html`
-   - 卫生间维修模型：`models/bathroom/bathroom_repair.html`
-   - 使用现代浏览器（Chrome、Firefox、Edge等）
+2. 打开项目：
+   - 使用现代浏览器（Chrome、Firefox、Edge等）打开 `index.html` 文件
+   - 或者通过本地服务器访问项目目录
    - 确保启用JavaScript和WebGL
 
 3. 使用说明：
+   - 在主页上浏览不同类别的模型
+   - 点击任意模型卡片上的"查看模型"按钮打开完整模型
    - 使用鼠标左键拖动旋转视图
    - 使用鼠标滚轮缩放视图
    - 使用鼠标右键拖动平移视图
@@ -58,34 +61,25 @@
 ## 项目结构
 
 ```
-3d-waterproofing-visualization/
-├── models/                    # 所有3D模型文件
-│   ├── house/                 # 房屋相关模型
-│   │   └── house_basic.html   # 基础房屋模型
-│   ├── roof/                  # 屋顶相关模型
-│   │   └── roof_repair.html   # 屋顶维修模型
-│   └── bathroom/              # 卫生间相关模型
+WaterproofViz3D/
+├── index.html                # 主页面，模型库入口
+├── models/                   # 所有3D模型文件
+│   ├── house/                # 房屋相关模型
+│   │   └── house_basic.html  # 基础房屋模型
+│   ├── roof/                 # 屋顶相关模型
+│   │   └── roof_repair.html  # 屋顶维修模型
+│   └── bathroom/             # 卫生间相关模型
 │       ├── bathroom_basic.html        # 基础卫生间模型
 │       ├── bathroom_leakage_basic.html      # 卫生间漏水基础模型
 │       ├── bathroom_leakage_external.html   # 卫生间漏水外部视图
 │       ├── bathroom_leakage_livingroom.html # 卫生间漏水到客厅模型
 │       ├── bathroom_high_fidelity.html      # 高保真卫生间模型
 │       └── bathroom_repair.html             # 卫生间维修模型
-├── docs/                      # 项目文档
-│   ├── overview/              # 项目概述文档
-│   │   ├── project_overview.md        # 项目总体概述
-│   │   ├── house_overview.md          # 房屋模型概述
-│   │   ├── roof_overview.md           # 屋顶模型概述
-│   │   └── bathroom_overview.md       # 卫生间模型概述
-│   ├── design/                # 设计文档
-│   │   └── design_principles.md       # 设计原则
-│   ├── implementation/        # 实现文档
-│   │   └── house_implementation.md    # 房屋模型实现
-│   └── plans/                 # 规划文档
-│       ├── future_plans.md            # 总体未来规划
-│       ├── product_roadmap.md         # 产品化规划
-│       └── bathroom_development_plan.md # 卫生间开发计划
-└── README.md                  # 项目主要说明文档
+└── docs/                     # 项目文档
+    ├── overview/             # 项目概述文档
+    ├── design/               # 设计文档
+    ├── implementation/       # 实现文档
+    └── plans/                # 规划文档
 ```
 
 ## 文档
@@ -138,10 +132,10 @@
 
 ## 许可证
 
-[待定]
+[MIT](LICENSE)
 
 ## 联系方式
 
-项目维护者：[维护者姓名] - [联系方式]
+项目维护者：Ye Sun - franksunye@hotmail.com
 
-项目链接：[项目URL]
+项目链接：[https://github.com/franksunye/WaterproofViz3D](https://github.com/franksunye/WaterproofViz3D)

@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D防水维修可视化项目 - 模型库</title>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.157.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.157.0/examples/jsm/"
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --primary-color: #3498db;
+      --secondary-color: #2980b9;
+      --background-color: #f8f9fa;
+      --card-background: #ffffff;
+      --text-color: #333333;
+      --border-color: #e0e0e0;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      line-height: 1.6;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white;
+      padding: 2rem 0;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      font-size: 1.2rem;
+      opacity: 0.9;
+    }
+
+    .filter-container {
+      display: flex;
+      justify-content: center;
+      margin: 2rem 0;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      background-color: var(--card-background);
+      border: 2px solid var(--border-color);
+      color: var(--text-color);
+      padding: 0.5rem 1.5rem;
+      margin: 0.5rem;
+      cursor: pointer;
+      border-radius: 30px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .filter-btn:hover {
+      background-color: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+
+    .filter-btn.active {
+      background-color: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 2rem;
+      margin: 2rem 0;
+    }
+
+    .model-card {
+      background-color: var(--card-background);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .model-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .model-preview {
+      height: 200px;
+      background-color: #f0f0f0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .model-preview canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .model-preview .model-icon {
+      font-size: 4rem;
+      color: var(--primary-color);
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+      opacity: 0.5;
+    }
+
+    .model-preview .loading-text {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background-color: rgba(0,0,0,0.5);
+      color: white;
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+      z-index: 2;
+    }
+
+    .model-info {
+      padding: 1.5rem;
+    }
+
+    .model-title {
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    .model-description {
+      color: #666;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .model-link {
+      display: inline-block;
+      background-color: var(--primary-color);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background-color 0.3s ease;
+    }
+
+    .model-link:hover {
+      background-color: var(--secondary-color);
+    }
+
+    footer {
+      background-color: #333;
+      color: white;
+      text-align: center;
+      padding: 1.5rem 0;
+      margin-top: 3rem;
+    }
+
+    @media (max-width: 768px) {
+      .gallery {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+    }
+  /* 模态窗口样式 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      overflow: hidden;
+    }
+
+    .modal-content {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .modal-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 24px;
+      line-height: 1;
+      color: #333;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      z-index: 1001;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .close-modal:hover {
+      background-color: #fff;
+      transform: scale(1.1);
+    }
+
+    .loading-indicator {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 1.5rem;
+      z-index: 999;
+    }
+
+    body.modal-open {
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <!-- 模态窗口 -->
+  <div id="model-modal" class="modal">
+    <div class="modal-content">
+      <div class="close-modal" id="close-modal">×</div>
+      <div class="loading-indicator" id="loading-indicator">加载中...</div>
+      <iframe id="model-iframe" class="modal-iframe" src="about:blank"></iframe>
+    </div>
+  </div>
+
+  <header>
+    <div class="container">
+      <h1>3D防水维修可视化项目</h1>
+      <p class="subtitle">模型库 - 探索各种3D防水维修模型</p>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="filter-container">
+      <button class="filter-btn active" data-filter="all">全部</button>
+      <button class="filter-btn" data-filter="house">房屋模型</button>
+      <button class="filter-btn" data-filter="roof">屋顶模型</button>
+      <button class="filter-btn" data-filter="bathroom">卫生间模型</button>
+    </div>
+
+    <div class="gallery">
+      <!-- 房屋模型 -->
+      <div class="model-card" data-category="house" data-model-type="house">
+        <div class="model-preview">
+          <canvas class="preview-canvas"></canvas>
+          <div class="model-icon">🏠</div>
+          <div class="loading-text">加载中...</div>
+        </div>
+        <div class="model-info">
+          <h3 class="model-title">基础房屋模型</h3>
+          <p class="model-description">完整的房屋外形结构，包括墙壁、屋顶、窗户和门，提供基础的交互功能。</p>
+          <a href="models/house/house_basic.html" class="model-link">查看模型</a>
+        </div>
+      </div>
+
+      <!-- 屋顶模型 -->
+      <div class="model-card" data-category="roof" data-model-type="roof">
+        <div class="model-preview">
+          <canvas class="preview-canvas"></canvas>
+          <div class="model-icon">🏠</div>
+          <div class="loading-text">加载中...</div>
+        </div>
+        <div class="model-info">
+          <h3 class="model-title">屋顶维修模型</h3>
+          <p class="model-description">展示屋顶的结构层、保温层和防水层，以及屋顶防水维修的各个步骤。</p>
+          <a href="models/roof/roof_repair.html" class="model-link">查看模型</a>
+        </div>
+      </div>
+
+      <!-- 卫生间模型 -->
+      <div class="model-card" data-category="bathroom" data-model-type="bathroom-basic">
+        <div class="model-preview">
+          <canvas class="preview-canvas"></canvas>
+          <div class="model-icon">🚿</div>
+          <div class="loading-text">加载中...</div>
+        </div>
+        <div class="model-info">
+          <h3 class="model-title">基础卫生间模型</h3>
+          <p class="model-description">展示卫生间的基本结构和设施。</p>
+          <a href="models/bathroom/bathroom_basic.html" class="model-link">查看模型</a>
+        </div>
+      </div>
+
+      <div class="model-card" data-category="bathroom" data-model-type="bathroom-leakage">
+        <div class="model-preview">
+          <canvas class="preview-canvas"></canvas>
+          <div class="model-icon">💧</div>
+          <div class="loading-text">加载中...</div>
+        </div>
+        <div class="model-info">
+          <h3 class="model-title">卫生间漏水基础模型</h3>
+          <p class="model-description">展示卫生间的基本漏水情况，包括阴角墙缝渗水。</p>
+          <a href="models/bathroom/bathroom_leakage_basic.html" class="model-link">查看模型</a>
+        </div>
+      </div>
+
+      <div class="model-card" data-category="bathroom" data-model-type="bathroom-external">
+        <div class="model-preview">
+          <canvas class="preview-canvas"></canvas>
+          <div class="model-icon">🏢</div>
+          <div class="loading-text">加载中...</div>
+        </div>
+        <div class="model-info">
+          <h3 class="model-title">卫生间漏水外部视图</h3>
+          <p class="model-description">从外部展示卫生间漏水对周围环境的影响。</p>
+          <a href="models/bathroom/bathroom_leakage_external.html" class="model-link">查看模型</a>
+        </div>
+      </div>
+
+      <div class="model-card" data-category="bathroom" data-model-type="bathroom-livingroom">
+        <div class="model-preview">
+          <canvas class="preview-canvas"></canvas>
+          <div class="model-icon">🛋️</div>
+          <div class="loading-text">加载中...</div>
+        </div>
+        <div class="model-info">
+          <h3 class="model-title">卫生间漏水到客厅模型</h3>
+          <p class="model-description">展示卫生间漏水如何影响下层客厅，包括墙壁和天花板的水渍。</p>
+          <a href="models/bathroom/bathroom_leakage_livingroom.html" class="model-link">查看模型</a>
+        </div>
+      </div>
+
+      <div class="model-card" data-category="bathroom" data-model-type="bathroom-hifi">
+        <div class="model-preview">
+          <canvas class="preview-canvas"></canvas>
+          <div class="model-icon">🛁</div>
+          <div class="loading-text">加载中...</div>
+        </div>
+        <div class="model-info">
+          <h3 class="model-title">高保真卫生间模型</h3>
+          <p class="model-description">提供更详细、更真实的卫生间视觉效果。</p>
+          <a href="models/bathroom/bathroom_high_fidelity.html" class="model-link">查看模型</a>
+        </div>
+      </div>
+
+      <div class="model-card" data-category="bathroom" data-model-type="bathroom-repair">
+        <div class="model-preview">
+          <canvas class="preview-canvas"></canvas>
+          <div class="model-icon">🔧</div>
+          <div class="loading-text">加载中...</div>
+        </div>
+        <div class="model-info">
+          <h3 class="model-title">卫生间维修模型</h3>
+          <p class="model-description">展示卫生间防水维修的步骤和过程。</p>
+          <a href="models/bathroom/bathroom_repair.html" class="model-link">查看模型</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <p>© 2023 3D防水维修可视化项目 | 所有权利保留</p>
+    </div>
+  </footer>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // 获取所有筛选按钮和模型卡片
+      const filterButtons = document.querySelectorAll('.filter-btn');
+      const modelCards = document.querySelectorAll('.model-card');
+      const modelLinks = document.querySelectorAll('.model-link');
+      const modal = document.getElementById('model-modal');
+      const modalIframe = document.getElementById('model-iframe');
+      const closeModal = document.getElementById('close-modal');
+      const loadingIndicator = document.getElementById('loading-indicator');
+
+      // 存储所有预览渲染器的数组
+      const previewRenderers = [];
+
+      // 初始化3D预览
+      initPreviews();
+
+      // 为每个筛选按钮添加点击事件
+      filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // 移除所有按钮的活动状态
+          filterButtons.forEach(btn => btn.classList.remove('active'));
+
+          // 添加当前按钮的活动状态
+          this.classList.add('active');
+
+          // 获取筛选类别
+          const filterValue = this.getAttribute('data-filter');
+
+          // 筛选模型卡片
+          modelCards.forEach(card => {
+            if (filterValue === 'all' || card.getAttribute('data-category') === filterValue) {
+              card.style.display = 'block';
+            } else {
+              card.style.display = 'none';
+            }
+          });
+        });
+      });
+
+      // 为每个模型链接添加点击事件
+      modelLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault(); // 阻止默认链接行为
+
+          // 显示加载指示器
+          loadingIndicator.style.display = 'block';
+
+          // 获取模型URL
+          const modelUrl = this.getAttribute('href');
+
+          // 设置iframe源
+          modalIframe.src = modelUrl;
+
+          // 显示模态窗口
+          modal.style.display = 'block';
+          document.body.classList.add('modal-open');
+
+          // 当iframe加载完成后隐藏加载指示器
+          modalIframe.onload = function() {
+            loadingIndicator.style.display = 'none';
+          };
+        });
+      });
+
+      // 关闭模态窗口
+      closeModal.addEventListener('click', function() {
+        modal.style.display = 'none';
+        document.body.classList.remove('modal-open');
+        // 清空iframe源以停止任何正在运行的内容
+        setTimeout(() => {
+          modalIframe.src = 'about:blank';
+        }, 300);
+      });
+
+      // 点击模态窗口外部也可以关闭
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+          closeModal.click();
+        }
+      });
+
+      // 添加键盘事件监听器，按ESC键关闭模态窗口
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.style.display === 'block') {
+          closeModal.click();
+        }
+      });
+
+      // 初始化所有预览
+      function initPreviews() {
+        modelCards.forEach(card => {
+          const canvas = card.querySelector('.preview-canvas');
+          const modelType = card.getAttribute('data-model-type');
+          const loadingText = card.querySelector('.loading-text');
+          const modelIcon = card.querySelector('.model-icon');
+
+          // 创建预览渲染器
+          const preview = createPreview(canvas, modelType, loadingText, modelIcon);
+          if (preview) {
+            previewRenderers.push(preview);
+          }
+        });
+
+        // 开始动画循环
+        animate();
+      }
+
+      // 创建单个预览
+      function createPreview(canvas, modelType, loadingText, modelIcon) {
+        if (!canvas) return null;
+
+        // 创建渲染器
+        const renderer = new THREE.WebGLRenderer({
+          canvas: canvas,
+          antialias: true,
+          alpha: true
+        });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+
+        // 创建场景
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xf0f0f0);
+
+        // 创建相机
+        const camera = new THREE.PerspectiveCamera(
+          45,
+          canvas.clientWidth / canvas.clientHeight,
+          0.1,
+          1000
+        );
+        camera.position.set(3, 2, 3);
+        camera.lookAt(0, 0, 0);
+
+        // 添加光源
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(1, 2, 3);
+        scene.add(directionalLight);
+
+        // 添加控制器
+        const controls = new OrbitControls(camera, canvas);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.1;
+        controls.enableZoom = false; // 禁用缩放，只允许旋转
+        controls.autoRotate = true;  // 自动旋转
+        controls.autoRotateSpeed = 3; // 旋转速度
+
+        // 根据模型类型创建不同的预览模型
+        let model;
+
+        switch(modelType) {
+          case 'house':
+            model = createHouseModel();
+            break;
+          case 'roof':
+            model = createRoofModel();
+            break;
+          case 'bathroom-basic':
+          case 'bathroom-leakage':
+          case 'bathroom-external':
+          case 'bathroom-livingroom':
+          case 'bathroom-hifi':
+          case 'bathroom-repair':
+            model = createBathroomModel(modelType);
+            break;
+          default:
+            model = createDefaultModel();
+        }
+
+        scene.add(model);
+
+        // 隐藏加载文本
+        if (loadingText) {
+          loadingText.style.display = 'none';
+        }
+
+        // 隐藏图标
+        if (modelIcon) {
+          modelIcon.style.display = 'none';
+        }
+
+        return {
+          renderer,
+          scene,
+          camera,
+          controls,
+          render: function() {
+            controls.update();
+            renderer.render(scene, camera);
+          }
+        };
+      }
+
+      // 创建房屋模型
+      function createHouseModel() {
+        const group = new THREE.Group();
+
+        // 地基
+        const foundation = new THREE.Mesh(
+          new THREE.BoxGeometry(3, 0.2, 2),
+          new THREE.MeshPhongMaterial({ color: 0xaaaaaa })
+        );
+        foundation.position.y = -0.1;
+        group.add(foundation);
+
+        // 墙壁
+        const walls = new THREE.Mesh(
+          new THREE.BoxGeometry(2, 1, 1.5),
+          new THREE.MeshPhongMaterial({ color: 0xd08c60 })
+        );
+        walls.position.y = 0.5;
+        group.add(walls);
+
+        // 屋顶
+        const roof = new THREE.Mesh(
+          new THREE.ConeGeometry(1.5, 1, 4),
+          new THREE.MeshPhongMaterial({ color: 0x8b4513 })
+        );
+        roof.position.y = 1.5;
+        roof.rotation.y = Math.PI / 4;
+        group.add(roof);
+
+        // 窗户
+        const window1 = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.3, 0.3),
+          new THREE.MeshPhongMaterial({ color: 0x87ceeb, transparent: true, opacity: 0.7 })
+        );
+        window1.position.set(1.01, 0.5, 0);
+        window1.rotation.y = Math.PI / 2;
+        group.add(window1);
+
+        const window2 = window1.clone();
+        window2.position.set(-1.01, 0.5, 0);
+        window2.rotation.y = -Math.PI / 2;
+        group.add(window2);
+
+        // 门
+        const door = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.4, 0.7),
+          new THREE.MeshPhongMaterial({ color: 0x8b4513 })
+        );
+        door.position.set(0, 0.35, 0.76);
+        group.add(door);
+
+        // 调整整体位置和比例
+        group.scale.set(0.7, 0.7, 0.7);
+        group.position.y = -0.5;
+
+        return group;
+      }
+
+      // 创建屋顶模型
+      function createRoofModel() {
+        const group = new THREE.Group();
+
+        // 结构层
+        const structure = new THREE.Mesh(
+          new THREE.BoxGeometry(3, 0.2, 2),
+          new THREE.MeshPhongMaterial({ color: 0xaaaaaa })
+        );
+        group.add(structure);
+
+        // 保温层
+        const insulation = new THREE.Mesh(
+          new THREE.BoxGeometry(2.8, 0.15, 1.8),
+          new THREE.MeshPhongMaterial({
+            color: 0xffff00,
+            transparent: true,
+            opacity: 0.7
+          })
+        );
+        insulation.position.y = 0.175;
+        group.add(insulation);
+
+        // 防水层
+        const waterproof = new THREE.Mesh(
+          new THREE.BoxGeometry(2.9, 0.05, 1.9),
+          new THREE.MeshPhongMaterial({
+            color: 0x0000ff,
+            transparent: true,
+            opacity: 0.5
+          })
+        );
+        waterproof.position.y = 0.275;
+        group.add(waterproof);
+
+        // 女儿墙
+        const parapet1 = new THREE.Mesh(
+          new THREE.BoxGeometry(3, 0.5, 0.1),
+          new THREE.MeshPhongMaterial({ color: 0xaaaaaa })
+        );
+        parapet1.position.set(0, 0.25, -1);
+        group.add(parapet1);
+
+        const parapet2 = new THREE.Mesh(
+          new THREE.BoxGeometry(3, 0.5, 0.1),
+          new THREE.MeshPhongMaterial({ color: 0xaaaaaa })
+        );
+        parapet2.position.set(0, 0.25, 1);
+        group.add(parapet2);
+
+        const parapet3 = new THREE.Mesh(
+          new THREE.BoxGeometry(0.1, 0.5, 2),
+          new THREE.MeshPhongMaterial({ color: 0xaaaaaa })
+        );
+        parapet3.position.set(-1.5, 0.25, 0);
+        group.add(parapet3);
+
+        const parapet4 = new THREE.Mesh(
+          new THREE.BoxGeometry(0.1, 0.5, 2),
+          new THREE.MeshPhongMaterial({ color: 0xaaaaaa })
+        );
+        parapet4.position.set(1.5, 0.25, 0);
+        group.add(parapet4);
+
+        // 调整整体位置和比例
+        group.scale.set(0.7, 0.7, 0.7);
+        group.position.y = -0.5;
+
+        return group;
+      }
+
+      // 创建卫生间模型
+      function createBathroomModel(type) {
+        const group = new THREE.Group();
+
+        // 地板
+        const floor = new THREE.Mesh(
+          new THREE.BoxGeometry(2, 0.1, 2),
+          new THREE.MeshPhongMaterial({ color: 0xeeeeee })
+        );
+        floor.position.y = -0.05;
+        group.add(floor);
+
+        // 墙壁1
+        const wall1 = new THREE.Mesh(
+          new THREE.BoxGeometry(2, 1.5, 0.1),
+          new THREE.MeshPhongMaterial({ color: 0xffffff })
+        );
+        wall1.position.set(0, 0.75, -1);
+        group.add(wall1);
+
+        // 墙壁2
+        const wall2 = new THREE.Mesh(
+          new THREE.BoxGeometry(0.1, 1.5, 2),
+          new THREE.MeshPhongMaterial({ color: 0xffffff })
+        );
+        wall2.position.set(-1, 0.75, 0);
+        group.add(wall2);
+
+        // 根据不同类型添加特定元素
+        if (type.includes('leakage') || type === 'bathroom-livingroom' || type === 'bathroom-external') {
+          // 添加水层
+          const water = new THREE.Mesh(
+            new THREE.BoxGeometry(1.8, 0.05, 1.8),
+            new THREE.MeshPhongMaterial({
+              color: 0x00aaff,
+              transparent: true,
+              opacity: 0.6
+            })
+          );
+          water.position.y = 0.025;
+          group.add(water);
+
+          // 添加漏水效果
+          if (type === 'bathroom-livingroom' || type === 'bathroom-external') {
+            const leak = new THREE.Mesh(
+              new THREE.SphereGeometry(0.1, 16, 16),
+              new THREE.MeshPhongMaterial({
+                color: 0x00aaff,
+                transparent: true,
+                opacity: 0.7
+              })
+            );
+            leak.position.set(-0.9, 0, -0.9);
+            group.add(leak);
+          }
+        }
+
+        // 添加马桶
+        const toilet = new THREE.Group();
+
+        // 马桶底座
+        const toiletBase = new THREE.Mesh(
+          new THREE.BoxGeometry(0.4, 0.4, 0.6),
+          new THREE.MeshPhongMaterial({ color: 0xffffff })
+        );
+        toiletBase.position.y = 0.2;
+        toilet.add(toiletBase);
+
+        // 马桶水箱
+        const toiletTank = new THREE.Mesh(
+          new THREE.BoxGeometry(0.4, 0.5, 0.2),
+          new THREE.MeshPhongMaterial({ color: 0xffffff })
+        );
+        toiletTank.position.set(0, 0.45, -0.2);
+        toilet.add(toiletTank);
+
+        // 马桶圈
+        const toiletSeat = new THREE.Mesh(
+          new THREE.TorusGeometry(0.18, 0.07, 16, 32, Math.PI),
+          new THREE.MeshPhongMaterial({ color: 0xeeeeee })
+        );
+        toiletSeat.rotation.x = Math.PI / 2;
+        toiletSeat.position.set(0, 0.41, 0.1);
+        toilet.add(toiletSeat);
+
+        toilet.position.set(0.7, 0, -0.7);
+        toilet.rotation.y = Math.PI / 4;
+        group.add(toilet);
+
+        // 添加洗手盆
+        const sink = new THREE.Group();
+
+        // 盆
+        const basin = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.25, 0.2, 0.15, 32),
+          new THREE.MeshPhongMaterial({ color: 0xffffff })
+        );
+        basin.position.y = 0.5;
+        sink.add(basin);
+
+        // 柱
+        const column = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.05, 0.05, 0.5, 16),
+          new THREE.MeshPhongMaterial({ color: 0xeeeeee })
+        );
+        column.position.y = 0.25;
+        sink.add(column);
+
+        // 水龙头
+        const faucet = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.03, 0.03, 0.2, 16),
+          new THREE.MeshPhongMaterial({ color: 0xcccccc })
+        );
+        faucet.rotation.x = Math.PI / 2;
+        faucet.position.set(0, 0.6, 0.1);
+        sink.add(faucet);
+
+        sink.position.set(-0.7, 0, 0.7);
+        group.add(sink);
+
+        // 如果是维修模型，添加维修工具
+        if (type === 'bathroom-repair') {
+          const tools = new THREE.Group();
+
+          // 工具箱
+          const toolbox = new THREE.Mesh(
+            new THREE.BoxGeometry(0.3, 0.2, 0.2),
+            new THREE.MeshPhongMaterial({ color: 0xff0000 })
+          );
+          tools.add(toolbox);
+
+          tools.position.set(0, 0.1, 0.5);
+          group.add(tools);
+        }
+
+        // 调整整体位置和比例
+        group.scale.set(0.7, 0.7, 0.7);
+        group.position.y = -0.3;
+
+        return group;
+      }
+
+      // 创建默认模型（简单立方体）
+      function createDefaultModel() {
+        const geometry = new THREE.BoxGeometry(1, 1, 1);
+        const material = new THREE.MeshPhongMaterial({ color: 0x3498db });
+        const cube = new THREE.Mesh(geometry, material);
+        return cube;
+      }
+
+      // 动画循环
+      function animate() {
+        requestAnimationFrame(animate);
+
+        // 渲染所有预览
+        previewRenderers.forEach(preview => {
+          if (preview) {
+            preview.render();
+          }
+        });
+      }
+
+      // 窗口大小调整时更新渲染器尺寸
+      window.addEventListener('resize', function() {
+        previewRenderers.forEach(preview => {
+          if (preview) {
+            const canvas = preview.renderer.domElement;
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+
+            preview.camera.aspect = width / height;
+            preview.camera.updateProjectionMatrix();
+            preview.renderer.setSize(width, height, false);
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
