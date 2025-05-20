@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>洗手间漏水外部视角 - 楼下漏水效果</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; }
+    #info {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(255,255,255,0.8);
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 14px;
+      max-width: 300px;
+      color: #333;
+    }
+    #viewControls {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    button {
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.8);
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover {
+      background: rgba(240,240,240,0.9);
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.157.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.157.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="info">洗手间漏水外部视角 - 展示楼下漏水效果</div>
+  <div id="viewControls">
+    <button id="upperView">上层视角</button>
+    <button id="lowerView">下层视角</button>
+    <button id="cutawayView">剖面视角</button>
+  </div>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    // 场景初始化
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf2f2f2);
+
+    // 相机设置
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(5, 2, 7); // 默认位置，可以看到整体结构
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true; // 启用阴影
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.1;
+    controls.target.set(1.5, 1.5, 1.5); // 中心点设置在两层中间
+
+    // 光照设置
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    dirLight.position.set(5, 10, 7.5);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 1024;
+    dirLight.shadow.mapSize.height = 1024;
+    scene.add(dirLight);
+
+    // 材质定义
+    const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xe0e0e0 });
+    const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xb0b0b0 });
+    const ceilingMaterial = new THREE.MeshStandardMaterial({
+      color: 0xd0d0d0,
+      transparent: true,
+      opacity: 0.9
+    });
+    const whiteMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+    const grayMaterial = new THREE.MeshStandardMaterial({ color: 0x888888 });
+
+    // 水材质
+    const waterMaterial = new THREE.MeshStandardMaterial({
+      color: 0x6ba4c7,
+      transparent: true,
+      opacity: 0.7,
+      metalness: 0.2,
+      roughness: 0.1
+    });
+
+    // 创建上层洗手间
+    const upperRoom = new THREE.Group();
+    scene.add(upperRoom);
+
+    // 上层地板/楼板
+    const floor = new THREE.Mesh(new THREE.BoxGeometry(3, 0.2, 3), floorMaterial);
+    floor.position.set(1.5, 3.0, 1.5);
+    floor.receiveShadow = true;
+    upperRoom.add(floor);
+
+    // 上层背面墙
+    const wall1 = new THREE.Mesh(new THREE.BoxGeometry(3, 2.5, 0.1), wallMaterial);
+    wall1.position.set(1.5, 4.25, 0);
+    wall1.castShadow = true;
+    upperRoom.add(wall1);
+
+    // 上层侧面墙
+    const wall2 = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2.5, 3), wallMaterial);
+    wall2.position.set(0, 4.25, 1.5);
+    wall2.castShadow = true;
+    upperRoom.add(wall2);
+
+    // 上层马桶
+    const toiletBase = new THREE.Mesh(new THREE.CylinderGeometry(0.27, 0.22, 0.42, 32), whiteMaterial);
+    toiletBase.position.set(2.2, 3.21, 0.5);
+    toiletBase.scale.set(1.1, 1, 1.8);
+    toiletBase.castShadow = true;
+    upperRoom.add(toiletBase);
+
+    const toiletTank = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.42, 0.16), whiteMaterial);
+    toiletTank.position.set(2.2, 3.61, 0.15);
+    toiletTank.castShadow = true;
+    upperRoom.add(toiletTank);
+
+    // 上层洗手盆
+    const sinkStand = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.85, 32), whiteMaterial);
+    sinkStand.position.set(0.5, 3.425, 2.0);
+    sinkStand.castShadow = true;
+    upperRoom.add(sinkStand);
+
+    const sinkBowl = new THREE.Mesh(
+      new THREE.SphereGeometry(0.2, 32, 32, 0, Math.PI * 2, 0, Math.PI / 2),
+      new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, side: THREE.DoubleSide })
+    );
+    sinkBowl.position.set(0.5, 3.85 + 0.15, 2.0);
+    sinkBowl.rotation.set(Math.PI, Math.PI / 2, 0);
+    sinkBowl.scale.set(2.8, 1, 1.5);
+    sinkBowl.castShadow = true;
+    upperRoom.add(sinkBowl);
+
+    // 上层地漏
+    const drain = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.12, 0.05, 0.1, 32),
+      grayMaterial
+    );
+    drain.position.set(1.5, 3.05, 1.5);
+    upperRoom.add(drain);
+
+    // 上层阴角水渍
+    const cornerWater = new THREE.Mesh(
+      new THREE.BoxGeometry(0.05, 1.5, 0.05),
+      waterMaterial
+    );
+    cornerWater.position.set(0.05, 4.0, 0.05);
+    upperRoom.add(cornerWater);
+
+    // 上层地面水渍
+    const floorWater = new THREE.Mesh(
+      new THREE.BoxGeometry(3, 0.01, 0.8),
+      waterMaterial
+    );
+    floorWater.position.set(1.5, 3.11, 0.4);
+    upperRoom.add(floorWater);
+
+    // 阴角墙缝渗水路径 - 从上层阴角到下层
+    const cornerLeakagePath = new THREE.Mesh(
+      new THREE.BoxGeometry(0.03, 3.0, 0.03),
+      new THREE.MeshStandardMaterial({
+        color: 0x6ba4c7,
+        transparent: true,
+        opacity: 0.7,
+        metalness: 0.2,
+        roughness: 0.1
+      })
+    );
+    cornerLeakagePath.position.set(0.05, 2.5, 0.05); // 从上层阴角延伸到下层
+    scene.add(cornerLeakagePath);
+
+    // 移除了地漏漏水相关的代码
+
+    // 创建下层房间
+    const lowerRoom = new THREE.Group();
+    scene.add(lowerRoom);
+
+    // 下层天花板（上层地板的底面）
+    const ceiling = new THREE.Mesh(
+      new THREE.BoxGeometry(3.2, 0.05, 3.2),
+      ceilingMaterial
+    );
+    ceiling.position.set(1.5, 2.9, 1.5);
+    ceiling.receiveShadow = true;
+    lowerRoom.add(ceiling);
+
+    // 下层卫生间地面瓷砖
+    const lowerFloor = new THREE.Mesh(
+      new THREE.BoxGeometry(3.5, 0.1, 3.5),
+      new THREE.MeshStandardMaterial({
+        color: 0xdedede,  // 浅灰色瓷砖
+        roughness: 0.2,
+        metalness: 0.1
+      })
+    );
+    lowerFloor.position.set(1.5, 0.05, 1.5);
+    lowerFloor.receiveShadow = true;
+    lowerRoom.add(lowerFloor);
+
+    // 下层地漏
+    const lowerDrain = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.12, 0.05, 0.1, 32),
+      grayMaterial
+    );
+    lowerDrain.position.set(1.5, 0.10, 1.5);
+    lowerRoom.add(lowerDrain);
+
+    // 下层卫生间墙壁 - 瓷砖墙
+    const tileWallMaterial = new THREE.MeshStandardMaterial({
+      color: 0xf5f5f5,  // 白色瓷砖
+      roughness: 0.1,
+      metalness: 0.05
+    });
+
+    const lowerWall1 = new THREE.Mesh(
+      new THREE.BoxGeometry(3.5, 2.8, 0.1),
+      tileWallMaterial
+    );
+    lowerWall1.position.set(1.5, 1.4, 0);
+    lowerWall1.castShadow = true;
+    lowerRoom.add(lowerWall1);
+
+    const lowerWall2 = new THREE.Mesh(
+      new THREE.BoxGeometry(0.1, 2.8, 3.5),
+      tileWallMaterial
+    );
+    lowerWall2.position.set(0, 1.4, 1.5);
+    lowerWall2.castShadow = true;
+    lowerRoom.add(lowerWall2);
+
+    // 下层卫生间设施 - 马桶
+    const lowerToilet = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.27, 0.22, 0.42, 32),
+      whiteMaterial
+    );
+    lowerToilet.position.set(2.2, 0.21, 0.5);
+    lowerToilet.scale.set(1.1, 1, 1.8);
+    lowerToilet.castShadow = true;
+    lowerRoom.add(lowerToilet);
+
+    const lowerToiletTank = new THREE.Mesh(
+      new THREE.BoxGeometry(0.5, 0.42, 0.16),
+      whiteMaterial
+    );
+    lowerToiletTank.position.set(2.2, 0.61, 0.15);
+    lowerToiletTank.castShadow = true;
+    lowerRoom.add(lowerToiletTank);
+
+    // 下层洗手盆
+    const lowerSinkStand = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.1, 0.1, 0.85, 32),
+      whiteMaterial
+    );
+    lowerSinkStand.position.set(0.5, 0.425, 2.0);
+    lowerSinkStand.castShadow = true;
+    lowerRoom.add(lowerSinkStand);
+
+    const lowerSinkBowl = new THREE.Mesh(
+      new THREE.SphereGeometry(0.2, 32, 32, 0, Math.PI * 2, 0, Math.PI / 2),
+      new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, side: THREE.DoubleSide })
+    );
+    lowerSinkBowl.position.set(0.5, 0.85 + 0.15, 2.0);
+    lowerSinkBowl.rotation.set(Math.PI, Math.PI / 2, 0);
+    lowerSinkBowl.scale.set(2.8, 1, 1.5);
+    lowerSinkBowl.castShadow = true;
+    lowerRoom.add(lowerSinkBowl);
+
+    // 移除了下层天花板中央的水渍 (与地漏漏水相关)
+
+    // 下层阴角墙壁水渍 - 从阴角墙缝渗漏下来的水
+    const lowerCornerWater = new THREE.Mesh(
+      new THREE.BoxGeometry(0.1, 1.2, 0.1),
+      new THREE.MeshStandardMaterial({
+        color: 0x6ba4c7,
+        transparent: true,
+        opacity: 0.8,
+        metalness: 0.2,
+        roughness: 0.1
+      })
+    );
+    lowerCornerWater.position.set(0.05, 1.8, 0.05); // 下层阴角位置
+    lowerRoom.add(lowerCornerWater);
+
+    // 下层墙面水渍 - 从阴角扩散的水渍
+    const lowerWallWater1 = new THREE.Mesh(
+      new THREE.BoxGeometry(0.8, 0.01, 0.1),
+      waterMaterial
+    );
+    lowerWallWater1.position.set(0.4, 1.2, 0.05);
+    lowerRoom.add(lowerWallWater1);
+
+    const lowerWallWater2 = new THREE.Mesh(
+      new THREE.BoxGeometry(0.1, 0.01, 0.8),
+      waterMaterial
+    );
+    lowerWallWater2.position.set(0.05, 1.2, 0.4);
+    lowerRoom.add(lowerWallWater2);
+
+    // 移除了天花板中央的水滴 (与地漏漏水相关)
+
+    // 创建阴角墙缝水滴
+    const cornerDrops = [];
+    for (let i = 0; i < 3; i++) {
+      const drop = new THREE.Mesh(
+        new THREE.SphereGeometry(0.02, 8, 8),
+        waterMaterial
+      );
+      drop.position.set(
+        0.05 + (Math.random() * 0.05),
+        2.0 - i * 0.5,
+        0.05 + (Math.random() * 0.05)
+      );
+      drop.castShadow = true;
+      drop.userData = {
+        speed: 0.008 + Math.random() * 0.01,
+        startY: 2.0 - i * 0.5,
+        endY: 0.3,
+        active: false,
+        delay: i * 800
+      };
+      cornerDrops.push(drop);
+      scene.add(drop);
+    }
+
+    // 视角控制
+    document.getElementById('upperView').addEventListener('click', () => {
+      camera.position.set(3, 5, 5);
+      controls.target.set(1.5, 4, 1.5);
+    });
+
+    document.getElementById('lowerView').addEventListener('click', () => {
+      camera.position.set(3, 1, 5);
+      controls.target.set(1.5, 1, 1.5);
+    });
+
+    document.getElementById('cutawayView').addEventListener('click', () => {
+      camera.position.set(5, 2, 7);
+      controls.target.set(1.5, 2, 1.5);
+    });
+
+    // 动画循环
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const delta = clock.getDelta();
+
+      // 阴角墙缝水滴动画
+      cornerDrops.forEach(drop => {
+        if (!drop.userData.active) {
+          if (Math.random() < 0.02) { // 稍微提高频率
+            drop.userData.active = true;
+            drop.position.y = drop.userData.startY;
+          }
+        } else {
+          drop.position.y -= drop.userData.speed;
+          if (drop.position.y < drop.userData.endY) {
+            drop.userData.active = false;
+            drop.position.y = drop.userData.startY;
+          }
+        }
+      });
+
+      // 阴角墙缝水渍波动效果
+      lowerCornerWater.material.opacity = 0.7 + Math.sin(Date.now() * 0.0015) * 0.15;
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // 窗口大小调整
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>
