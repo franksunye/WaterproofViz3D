@@ -6,6 +6,8 @@
 
 访问 [GitHub Pages 演示](https://franksunye.github.io/WaterproofViz3D/) 查看在线演示。
 
+> 注意：GitHub Pages 部署可能需要几分钟时间，如果链接暂时不可用，请稍后再试。
+
 ## 功能特点
 
 ### 房屋模型
